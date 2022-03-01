@@ -139,7 +139,7 @@ func (a *SteamGuardAccount) FetchConfirmations() ([]*Confirmation, error) {
 	confDescs := confDescRegex.FindAllStringSubmatch(respString, -1)
 
 	//fmt.Printf("\tconfIDs:'%v'\n\tconfKeys:'%v'\n\tconfDescs:'%v'\n", confIDs, confKeys, confDescs)
-	Save(respString)
+
 	if confIDs == nil || confKeys == nil || confDescs == nil {
 		return nil, errors.New("failed to parse response")
 	}
