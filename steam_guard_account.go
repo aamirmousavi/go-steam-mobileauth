@@ -15,9 +15,9 @@ import (
 	"strings"
 )
 
-var confIDRegex = regexp.MustCompile("data-confid=\"(\\d+)\"")
-var confKeyRegex = regexp.MustCompile("data-key=\"(\\d+)\"")
-var confDescRegex = regexp.MustCompile("<div>((Confirm|Trade with|Sell -) .+)</div>")
+var confIDRegex = regexp.MustCompile(`data-confid=\"(\d+)\"`)
+var confKeyRegex = regexp.MustCompile(`data-key=\"(\d+)\"`)
+var confDescRegex = regexp.MustCompile("<div>((Confirm|Trade|Trade with|Sell -) .+)</div>")
 
 type SteamGuardAccount struct {
 	SharedSecret   string `json:"shared_secret"`
@@ -138,6 +138,8 @@ func (a *SteamGuardAccount) FetchConfirmations() ([]*Confirmation, error) {
 	confKeys := confKeyRegex.FindAllStringSubmatch(respString, -1)
 	confDescs := confDescRegex.FindAllStringSubmatch(respString, -1)
 
+	//fmt.Printf("\tconfIDs:'%v'\n\tconfKeys:'%v'\n\tconfDescs:'%v'\n", confIDs, confKeys, confDescs)
+	Save(respString)
 	if confIDs == nil || confKeys == nil || confDescs == nil {
 		return nil, errors.New("failed to parse response")
 	}
