@@ -21,7 +21,6 @@ func (a *SteamGuardAccount) ConfirmationsDetail(ConfirmationId string) (string, 
 	var _m map[string]interface{}
 	err = json.Unmarshal([]byte(respString), &_m)
 	if err != nil {
-		fmt.Println("json 1 error: ", err)
 		return "", err
 	}
 	if ok, okType := _m["success"].(bool); !ok || !okType {
