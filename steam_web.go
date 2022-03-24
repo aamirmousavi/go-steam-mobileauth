@@ -80,12 +80,6 @@ func WebRequest(queryUrl, method string, params *url.Values, cookies *cookiejar.
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		s, e := ioutil.ReadAll(resp.Body)
-		if e != nil {
-			fmt.Println("am I joke to you?")
-		} else {
-			Savet(queryUrl + " " + fmt.Sprintf("%v", *params) + " " + string(s))
-		}
 		return nil, fmt.Errorf("request failed with status code: %v", resp.StatusCode)
 	}
 	return ioutil.ReadAll(resp.Body)
