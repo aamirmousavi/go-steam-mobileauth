@@ -13,6 +13,7 @@ type SessionData struct {
 	WebCookie        string
 	OAuthToken       string
 	SteamID          uint64
+	SteamParental    string //family View Pin
 }
 
 func (sd *SessionData) AddCookies(cookies *cookiejar.Jar) {
@@ -69,4 +70,14 @@ func (sd *SessionData) AddCookies(cookies *cookiejar.Jar) {
 			Domain: ".steamcommunity.com",
 		},
 	})
+	if sd.SteamParental != "" {
+		cookies.SetCookies(cookiePath, []*http.Cookie{
+			&http.Cookie{
+				Name:   "steamparental",
+				Value:  sd.SteamParental,
+				Path:   "/",
+				Domain: ".steamcommunity.com",
+			},
+		})
+	}
 }
