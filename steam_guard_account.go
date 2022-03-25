@@ -15,8 +15,9 @@ import (
 	"strings"
 )
 
-var confIDRegex = regexp.MustCompile(`data-confid=\"(\d+)\"`)
-var confKeyRegex = regexp.MustCompile(`data-key=\"(\d+)\"`)
+// var confIDRegex = regexp.MustCompile(`data-confid=\"(\d+)\"`)
+var confIDRegex = regexp.MustCompile(`(div class="mobileconf_list_entry")(.*)(data-confid=\"(\d+)\")`)
+var confKeyRegex = regexp.MustCompile(`(div class="mobileconf_list_entry")(.*)(data-key=\"(\d+)\")`)
 var confDescRegex = regexp.MustCompile("<div>((Confirm|Trade|Trade with|Sell -) .+)</div>")
 
 type SteamGuardAccount struct {
@@ -131,18 +132,26 @@ func (a *SteamGuardAccount) FetchConfirmations() ([]*Confirmation, error) {
 	if strings.Contains(respString, "<div>There was a problem loading the confirmations page. Please try your request again later.</div>") {
 		return nil, errors.New("steam failed to return confirmations page, try again later")
 	}
-
+	// Save(respString)
 	// Try to parse response
 	confIDs := confIDRegex.FindAllStringSubmatch(respString, -1)
 	confKeys := confKeyRegex.FindAllStringSubmatch(respString, -1)
 	if confIDs == nil || confKeys == nil {
 		return nil, errors.New("failed to parse response")
 	}
-
+	str := ``
+	for _, row := range confIDs {
+		for _, col := range row {
+			str += "\n\t'" + col + "'"
+		}
+		str += "\n"
+	}
+	fmt.Print(str)
 	confDescs, err := confirmationDescription(respString, confIDs)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("ids: %d\tkey: %d dsec: %d\n", len(confIDs), len(confKeys), len(confDescs))
 	if len(confIDs) != len(confKeys) || len(confIDs) != len(confDescs) {
 		return nil, errors.New("unexpected response format: number of ids, keys and descriptions are not the same")
 	}
@@ -151,8 +160,8 @@ func (a *SteamGuardAccount) FetchConfirmations() ([]*Confirmation, error) {
 	var confirmations []*Confirmation
 	for index, _ := range confIDs {
 		cn := &Confirmation{
-			ConfirmationID:          confIDs[index][1],
-			ConfirmationKey:         confKeys[index][1],
+			ConfirmationID:          confIDs[index][len(confIDs[index])-1],
+			ConfirmationKey:         confKeys[index][len(confIDs[index])-1],
 			ConfirmationDescription: confDescs[index],
 		}
 
