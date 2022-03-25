@@ -117,7 +117,6 @@ func (a *SteamGuardAccount) FetchConfirmations() ([]*Confirmation, error) {
 
 	cookies, _ := cookiejar.New(nil)
 	a.Session.AddCookies(cookies)
-
 	respBody, err := WebRequest(UrlConfirmationService+"/conf", "GET", &queryParams, cookies, nil, nil)
 	if err != nil {
 		return nil, err
@@ -136,14 +135,14 @@ func (a *SteamGuardAccount) FetchConfirmations() ([]*Confirmation, error) {
 	// Try to parse response
 	confIDs := confIDRegex.FindAllStringSubmatch(respString, -1)
 	confKeys := confKeyRegex.FindAllStringSubmatch(respString, -1)
-	confDescs := confDescRegex.FindAllStringSubmatch(respString, -1)
-
-	//fmt.Printf("\tconfIDs:'%v'\n\tconfKeys:'%v'\n\tconfDescs:'%v'\n", confIDs, confKeys, confDescs)
-
-	if confIDs == nil || confKeys == nil || confDescs == nil {
+	if confIDs == nil || confKeys == nil {
 		return nil, errors.New("failed to parse response")
 	}
 
+	confDescs, err := confirmationDescription(respString, confIDs)
+	if err != nil {
+		return nil, err
+	}
 	if len(confIDs) != len(confKeys) || len(confIDs) != len(confDescs) {
 		return nil, errors.New("unexpected response format: number of ids, keys and descriptions are not the same")
 	}
@@ -154,8 +153,9 @@ func (a *SteamGuardAccount) FetchConfirmations() ([]*Confirmation, error) {
 		cn := &Confirmation{
 			ConfirmationID:          confIDs[index][1],
 			ConfirmationKey:         confKeys[index][1],
-			ConfirmationDescription: confDescs[index][1],
+			ConfirmationDescription: confDescs[index],
 		}
+
 		confirmations = append(confirmations, cn)
 	}
 
@@ -220,7 +220,6 @@ func (a *SteamGuardAccount) _sendConfirmationAjax(cn *Confirmation, op string) e
 	if err != nil {
 		return err
 	}
-
 	r := sendConfirmationResponse{}
 	if err = json.Unmarshal(respBody, &r); err != nil {
 		return err
